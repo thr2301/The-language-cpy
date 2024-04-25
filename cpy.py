@@ -172,6 +172,7 @@ def syntax():
     global isAtLeastOneID
     global isAtLeastOnePar
     global seekIndex
+    global quadList
 
     def ifState(token):
         global seekIndex
@@ -179,22 +180,31 @@ def syntax():
             if token[2] == "if" or token[2] == "elif":
                 token = lex()
                 if isCondition(token):
+                    conditionTrue = []
+                    conditionFalse = []
+                    conditionTrue = backpatch(conditionTrue, nextQuad())
                     token = lex()
                     if token[0] == "anwkatwtoken":
                         token = lex()
                         if isStatement(token):
+                            ifList = makeList(nextQuad())
+                            quadList.append(genQuad("jump","_","_","_"))
+                            conditionFalse = backpatch(conditionFalse, nextQuad())
                             seekIndex = f.tell()
                             token = lex()
                             if token[0] == "commandtoken":
                                 if token[2] == "elif":
+                                    ifList = backpatch(ifList,nextQuad())
                                     return ifState(token)
                                 elif token[2] == "else":
+                                    ifList = backpatch(ifList,nextQuad())
                                     return elseState(token)
                                 else:
+                                    ifList = backpatch(ifList,nextQuad())
                                     f.seek(seekIndex) 
                                     return True
                             else:
-                                f.seek(seekIndex) 
+                                f.seek(seekIndex)
                                 return True
                         else:
                             print ("Inside the 'if' at line:", token[1], "a statement was expected")
@@ -221,18 +231,29 @@ def syntax():
                     return False
 
     def isCondition(token):
+        Btrue = []
+        Bfalse = []
         global seekIndex
         if isBoolTerm(token):
+            Q1true = []
+            Q1false = []
+            Btrue = Q1true
+            Bfalse = Q1false
             seekIndex = f.tell()
             token = lex()
             if token[0] == "commandtoken":
                 while token[2]=="or":
+                    Bfalse = backpatch(Bfalse,nextQuad())
                     seekIndex = f.tell()
                     token = lex()
                     if isBoolTerm(token) == False:
                         print("After the 'or' at line:", token[1], "a boolean term was expected")
                         return False
                     else:
+                        Q2true = []
+                        Q2false = []
+                        Btrue = mergeList(Btrue,Q2true)
+                        Bfalse = Q2false
                         f.seek(seekIndex)
                 return True
             else:
@@ -243,15 +264,26 @@ def syntax():
             return False        
     
     def isBoolTerm(token):
+        Qtrue = []
+        Qfalse = []
         global seekIndex
         if isBoolFactor(token):
+            R1true = []
+            R1false = []
+            Qtrue = R1true
+            Qfalse = R1false
             seekIndex = f.tell()
             token = lex()
             if token[0] == "commandtoken":
                 while token[2]=="and":
+                    Qtrue = backpatch(Qtrue,nextQuad())
                     seekIndex = f.tell()
                     token = lex()
                     if isBoolFactor(token):
+                        R2true = []
+                        R2false = []
+                        Qfalse = mergeList(Qfalse,R2false)
+                        Qtrue = R2true
                         seekIndex = f.tell()
                         token = lex()
                         if token[0]!= "commandtoken":
@@ -269,19 +301,32 @@ def syntax():
             return False               
 
     def isBoolFactor(token):
+        Rtrue = []
+        Rfalse = []
         if token[0] == "commandtoken":
             if token[2] == "not":
                 token = lex()
                 if isCondition(token):
+                    Btrue = []
+                    Bfalse = []
+                    Rtrue = Bfalse
+                    Rfalse = Btrue
                     return True
                 else:
                     print("At line:", token[1],"a boolean factor was expected after 'not")
                     return False
             elif isExpression(token):
+                E1place = 1 #pairnei ti timi apo to Expression
                 token = lex()
                 if token[0] in relOpList:
+                    relOp = token[0]
                     token = lex()
                     if isExpression(token):
+                        E2place = 2 #pairnei ti timi apo to Expression
+                        Rtrue = makeList(nextQuad())
+                        quadList.append(genQuad(relOp, E1place,E2place,"_"))
+                        Rfalse = makeList(nextQuad())
+                        quadList.append(genQuad("jump","_","_","_"))
                         return True
                     else:
                         print("At line", token[1], "an expression was expected after a relationship opperand")
@@ -300,26 +345,41 @@ def syntax():
             else:
                 print("At line", token[1], "a relationship opperand was expected")
                 return False
+        elif isCondition(token):
+            Btrue = []
+            Bfalse = []
+            Rtrue = Btrue
+            Rfalse = Bfalse
+            return True
         else:
-            return False           
+            return False
+            
 
     def isExpression(token):
+        Eplace = 0
         global seekIndex
         seekIndex = f.tell()
         if isOptionalSign(token):
             token = lex()       
         if isTerm(token):
+            T1place = 1
             seekIndex = f.tell()
             token = lex()
             while token[0] == "addtoken" or token[0] == "subtoken":
+                operand = token[0]
                 token = lex()
                 if isTerm(token):
+                    T2place = 2
+                    w = newTemp()
+                    quadList.append(genQuad(operand,T1place,T2place,w))
+                    T1place = w
                     seekIndex = f.tell()
                     token = lex()
                 else:
                     print("At line", token[1], "a term was expected after an add or sub opperand. Instead found:", token[0])
                     return False
             f.seek(seekIndex)
+            Eplace = T1place
             return True
         else:
             f.seek(seekIndex)      
@@ -333,26 +393,36 @@ def syntax():
             return False
    
     def isTerm(token):
+        Tplace = 0
         global seekIndex
         if isFactor(token):
+            F1place = 1
             seekIndex = f.tell()
             token = lex()
             while token[0] == "multoken" or token[0] == "modtoken" or token[0] == "divtoken":
+                operand = token[0]
                 token = lex()
                 if isFactor(token):
+                    F2place = 2
+                    w = newTemp()
+                    quadList.append(genQuad(operand,F1place,F2place))
+                    F1place = w
                     seekIndex = f.tell()
                     token = lex()
                 else:
                     print("At line", token[1], "a factor was expected after a multiplication or division opperand. Instead found: ",token[0])
                     return False
             f.seek(seekIndex)
+            Tplace = F1place
             return True
         else:
             return False
         
     def isFactor(token):
+        Fplace = 0
         global seekIndex
         if token[0] == "numbertoken":
+            Fplace = token[2]
             return True        
         elif token[0] == "anagnoristikotoken":
             seekIndex = f.tell()
@@ -365,11 +435,15 @@ def syntax():
             if idTail(token):
                 return True
             else:
+                IDplace = 1
+                Fplace = IDplace
                 f.seek(tempSeekIndex)
                 return True       
         elif token[0] == "leftpartoken":
             token = lex()
             if isExpression(token):
+                Eplace = 2
+                Fplace = Eplace
                 token = lex()
                 if token[0] == "rightpartoken":
                     return True
@@ -501,8 +575,12 @@ def syntax():
     def whileState(token):
         if token[0] == "commandtoken":
             if token[2] == "while":
+                condQuad = nextQuad()
                 token = lex()
                 if isCondition(token):
+                    conditionTrue = []
+                    conditionFalse = []
+                    conditionTrue = backpatch(conditionTrue, nextQuad())
                     token = lex()
                     if token[0] == "anwkatwtoken":
                         token = lex()
@@ -511,6 +589,8 @@ def syntax():
                             if statements(token):
                                 token = lex()
                                 if token[0] == "kleisimotoken":
+                                    quadList.append(genQuad("jumb","_","_",condQuad))
+                                    conditionFalse = backpatch(conditionFalse,nextQuad())
                                     return True
                                 else:
                                     print("At line", token[1] ,"a '#}' was expected to close a '#{ found earlier for the while loop")
@@ -541,12 +621,9 @@ def syntax():
             if callMainPart(token):
                 return True
             else:
-                print("At line", token[1]," main was expected")
-                print('Compilation failed')
                 exit()
         else:
             print("At line", token[1]," declarations was expected")
-            print('Compilation failed')
             exit()
 
     def isPrintStat(token):
@@ -710,7 +787,6 @@ def syntax():
                                                 continue
                                             else:
                                                 print ("At line", token[1], "a global was expected")
-                                                print('Compilation failed')
                                                 exit()
                                         token = lex()
                                         if statements(token):
@@ -719,40 +795,33 @@ def syntax():
                                                 return True
                                             else:
                                                 print ("At line", token[1], "a '#}' was expected to close a '#{ found earlier")
-                                                print('Compilation failed')
                                                 exit()
                                         else:
                                             print ("At line", token[1], "a statement was expected")
-                                            print('Compilation failed')
                                             exit()
                                     else:
                                         print ("At line", token[1], "a '#{' was expected")
-                                        print('Compilation failed')
                                         exit()
                                 else:
                                     print ("At line", token[1], "a ':' was expected")
-                                    print('Compilation failed')
                                     exit()
                             else:
                                 print ("At line", token[1], "a ')' was expected")
-                                print('Compilation failed')
                                 exit()
                         else:
                             print ("At line", token[1], "an id was expected")
-                            print('Compilation failed')
                             exit()
                     else:
                         print ("At line", token[1], "a '(' was expected")
-                        print('Compilation failed')
                         exit()
                 else:
                     print ("At line", token[1], "an id was expected")
-                    print('Compilation failed')
                     exit()
             else:
                 return False
         else:
             return False
+
         
     def callMainPart(token):
         if token[0] == "defitoken":
@@ -761,33 +830,57 @@ def syntax():
                 if token[2] == "main":
                     token=lex()
                     if declarations(token):
-                        token=lex()                  
-                        if statements(token):      
+                        token=lex()
+                    if statements(token):      
                             return True
-                        else:
-                            print ("At line", token[1], "a statement was expected")
-                            print('Compilation failed')
-                            exit()
                     else:
-                        print ("At line", token[1], "a declaration was expected")
-                        print('Compilation failed')
+                        print ("At line", token[1], "a statement was expected")
                         exit()
                 else:
-                    print ("At line", token[1], "a main was expected")
-                    print('Compilation failed')
                     exit()
             else:
-                print ("At line", token[1], "a main was expected")
-                print('Compilation failed')
                 exit()
         else:
             return False
 
+
+    def nextQuad():
+        global quadNum
+        quadNum += 1
+        return quadNum
+
+    def genQuad(op,x,y,z):
+        quad = [op,x,y,z]
+        return quad
+
+    def newTemp():
+        global tempNum
+        tempNum += 1
+        s = "T_"
+        return s+tempNum
+
+    def emptyList():
+        return ["_","_","_","_"]
+
+    def makeList(label):
+        return [label]
+
+    def mergeList(list1,list2):
+        return list1+list2
+
+    def backpatch(list,label):
+        for x in list:
+            x[-1] = label
+        return list
+
+
     relOpList=["isothtatoken","mikroterotoken","megaluterotoken","mikisotoken","megisotoken","diaforotoken"]
     seekIndex = f.tell()
-    return startRule()                         
+
+    
 
 
+    return startRule()
 
 
 isAtLeastOneStatement = False
@@ -796,6 +889,9 @@ isAtLeastOneGlobal = False
 isAtLeastOneID = False
 isAtLeastOnePar = False
 line = 0
+quadNum = -1
+tempNum = -1
+quadList = []
 
 #Gia to diabasma apo ta arguments
 parser = argparse.ArgumentParser(description='Compile a file.')
