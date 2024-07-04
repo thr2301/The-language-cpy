@@ -14,13 +14,13 @@ assembly-for-(nameOfTheFileToTest.cpy).asm file.
 
 
 ## Some test files are:
--i) test.cpy 
--ii) onlyMainTest.cpy 
--iii) moreThanOneDeclarationsTest.cpy
--iv) limitsTest.cpy 
--v)smallTest.cpy
--vi)ifWhileTest.cpy 
--vii) finalCodeExampleTest.cpy 
+- i) test.cpy 
+- ii) onlyMainTest.cpy 
+- iii) moreThanOneDeclarationsTest.cpy
+- iv) limitsTest.cpy 
+- v)smallTest.cpy
+- vi)ifWhileTest.cpy 
+- vii) finalCodeExampleTest.cpy 
 
 ## Important notes:
 1)More details you can find in the REPORT.pdf
