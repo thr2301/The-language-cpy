@@ -1,15 +1,15 @@
-***This is a compiler that compiles a language callwd cpy to RISC-V assembly. It was created from the scratch for the project of the university course Complilers 1 ***
+#This is a compiler that compiles a language callwd cpy to RISC-V assembly. It was created from the scratch for the project of the university course Complilers 1 
 
 **Instructions for the execution:**
 
 **Some test files are:**
-i) test.cpy 
-ii) onlyMainTest.cpy 
-iii) moreThanOneDeclarationsTest.cpy
-iv) limitsTest.cpy 
-v)smallTest.cpy
-vi)ifWhileTest.cpy 
-vii) finalCodeExampleTest.cpy 
+-i) test.cpy 
+-ii) onlyMainTest.cpy 
+-iii) moreThanOneDeclarationsTest.cpy
+-iv) limitsTest.cpy 
+-v)smallTest.cpy
+-vi)ifWhileTest.cpy 
+-vii) finalCodeExampleTest.cpy 
 
 **The compiler file is:**
 cpy.py
