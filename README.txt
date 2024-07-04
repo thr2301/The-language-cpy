@@ -1,23 +1,27 @@
-Athanasios Roudis 5098 , Stylianos Simantirakis 5127
+***This is a compiler that compiles a language callwd cpy to RISC-V assembly. It was created from the scratch for the project of the university course Complilers 1***
 
-Instructions for the execution:
+**Instructions for the execution:**
 
-The test files are:
-i) test.cpy
-ii) onlyMainTest.cpy
+**Some test files are:**
+i) test.cpy 
+ii) onlyMainTest.cpy 
 iii) moreThanOneDeclarationsTest.cpy
-iv) limitsTest.cpy
+iv) limitsTest.cpy 
+v)smallTest.cpy
+vi)ifWhileTest.cpy 
+vii) finalCodeExampleTest.cpy 
 
-The compiler file is: cpy.py
+**The compiler file is:* 
+cpy.py
 
-To run the compiler you must open a terminal in the folder in which you have saved the cpy.py and run the following command :
-\the_path_of_the_file>python cpy.py onlyMain.cpy
+To run the compiler you need to open a terminal in the folder where you saved cpy.py and run the following command: 
+\the_path_of_the_file>/python cpy.py nameOfTheFileToTest.cpy
 
+Intermediate code is generated in the intermediate-for file
+(nameOfTheFileToTest.cpy).int and the symbol table is generated in the file 
+symbol-table-for-(nameOfTheFileToTest.cpy).sym .The final code is generated at 
+assembly-for-(nameOfTheFileToTest.cpy).asm file.
 
-Important notes:
-Because of the logic of  looking to the next token to determine if the syntax is correct and 
-after the check we go back to the previous token with f.seek() and we call lex again, 
-when it reads a \n that it already has read it counts the line again so the lines of the error messages are not correct. 
-We thought of a way to do it but it would be too costly for the purpose it serves 
-so we preferred not to do it so the speed of the compiler isn't compromised 
-
+**Important notes:*
+1)More details you can find in the REPORT.pdf
+2)There is a problem in the code that is produced , more specifically in some tests there are infinite loop.
