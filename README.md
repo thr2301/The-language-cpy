@@ -1,4 +1,4 @@
-# This is a compiler that compiles a language called cpy to RISC-V assembly. It was created from scratch for a project for the university course Complilers 1
+# This is a compiler that compiles a language called cpy to RISC-V assembly. It was created from scratch for a project for the university course Complilers 1 and was graded 9/10
 
 ## Instructions for the execution:
 
