@@ -24,6 +24,6 @@ assembly-for-(nameOfTheFileToTest.cpy).asm file.
 
 ## Important notes:
 - 1)More details you can find in the REPORT.pdf
-- 2)There is a problem in the code that is produced , more specifically in some tests there are infinite loop.
+- 2)There is a problem in the code that is produced , more specifically in some tests there are infinite loop where a function returns to the caller.
 - 3)You can run all the tests at once in command line using the file run_tests.bat and using the following command:
 run_tests.bat cpy.py
